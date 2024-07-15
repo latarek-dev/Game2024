@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zadanie</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Zadanie dla patrolu {{ patrol.name }}</h1>
+
+    <!-- Wyświetlanie wiadomości flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.keyword.label }} {{ form.keyword }}
+        {{ form.submit }}
+    </form>
+    <p>Punkty: {{ patrol.score }}</p>
+    <p>Kara czasowa: {{ patrol.time_penalty }} minut</p>
+</body>
+</html>
