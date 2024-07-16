@@ -13,7 +13,9 @@ class Patrol(db.Model):
 class Family(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    discovered_magazines = db.Column(db.Integer, default=0)
     patrols = db.relationship('Patrol', backref='family', lazy=True)
+    assigned_magazines = db.Column(db.PickleType, default=[])
 
 class UsedKeyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
