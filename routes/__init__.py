@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from forms import LoginForm, TaskForm
-from models import db, Patrol, Task
+from models import db, Patrol, UsedKeyword
 
 main = Blueprint('main', __name__)
 
@@ -37,18 +37,34 @@ def index():
     return render_template('index.html', form=form)
 
 
+# Pula haseł
+valid_keywords = [
+    'skłodowska', 'skała', 'żyrafa', 'hipopotam', 'cytryna', 
+    'barć', 'hełm', 'chrobry', 'baron'
+]
+
 @main.route('/task/<int:patrol_id>', methods=['GET', 'POST'])
 def task(patrol_id):
     patrol = Patrol.query.get_or_404(patrol_id)
     form = TaskForm()
     if form.validate_on_submit():
-        task = Task.query.filter_by(keyword=form.keyword.data, family_id=patrol.family_id).first()
-        if task:
-            patrol.score += 1
-            db.session.commit()
-            flash('Hasło poprawne!', 'success')
+        keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
+        patrol_name_without_number = ''.join(filter(str.isalpha, patrol.name)).lower()  # Nazwa patrolu bez cyfry
+        
+        # Sprawdź, czy hasło zostało już użyte przez ten patrol
+        if UsedKeyword.query.filter_by(patrol_id=patrol_id, keyword=keyword).first():
+            flash('To hasło zostało już użyte', 'warning')
         else:
-            patrol.time_penalty += 5
-            db.session.commit()
-            flash('Niepoprawne hasło! Kara: 5 minuty', 'danger')
+            if keyword in valid_keywords or keyword == patrol_name_without_number:
+                patrol.score += 1
+                # Dodaj używane hasło do bazy danych tylko jeśli jest prawidłowe
+                new_used_keyword = UsedKeyword(keyword=keyword, patrol_id=patrol_id)
+                db.session.add(new_used_keyword)
+                db.session.commit()
+                flash('Hasło poprawne!', 'success')
+            else:
+                patrol.time_penalty += 5
+                db.session.commit()
+                flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+    
     return render_template('task.html', form=form, patrol=patrol)
