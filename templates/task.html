@@ -2,59 +2,92 @@
 <html>
 <head>
     <title>Zadanie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        /* Stylizacja planszy */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
             grid-template-rows: repeat(10, 1fr);
             gap: 1px;
-            width: 300px;
-            height: 300px;
+            width: 90%;
+            max-width: 500px;
+            height: auto;
+            margin: 20px auto;
         }
+
         .grid-item {
             border: 1px solid #ddd;
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 50px; /* Większa wysokość w komórce siatki */
+            font-size: 16px; /* Większy rozmiar tekstu w komórce siatki */
         }
+
         .magazine {
-            background-color: #f39c12; /* Customize this color as needed */
-            color: white; /* For better visibility of the text */
+            background-color: #f39c12;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .grid-container {
+                max-width: 400px;
+            }
+
+            .grid-item {
+                height: 40px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .grid-container {
+                max-width: 300px;
+            }
+
+            .grid-item {
+                height: 30px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Zadanie dla patrolu {{ patrol.name }}</h1>
+    <div class="container">
+        <h1>Zadanie dla patrolu {{ patrol.name }}</h1>
 
-    <!-- Wyświetlanie wiadomości flash -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="{{ category }}">{{ message }}</div>
+        <!-- Wyświetlanie wiadomości flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.keyword.label }} {{ form.keyword }}
+            {{ form.submit }}
+        </form>
+        <p>Punkty patrolu: {{ patrol.score }}</p>
+        <p>Odkryte magazyny rodziny: {{ family.discovered_magazines }}</p>
+        <p>Kara czasowa: {{ patrol.time_penalty }} minut</p>
+        
+        <br>
+
+        <h2>Odnalezione magazyny</h2>
+        <div class="grid-container">
+            {% for row in range(10) %}
+                {% for col in range(10) %}
+                    <div class="grid-item {% if 'ABCDEFGHIJ'[row] ~ (col + 1) in family.assigned_magazines %} magazine {% endif %}">
+                        {{ 'ABCDEFGHIJ'[row] ~ (col + 1) }}
+                    </div>
+                {% endfor %}
             {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        {{ form.keyword.label }} {{ form.keyword }}
-        {{ form.submit }}
-    </form>
-    <p>Punkty patrolu: {{ patrol.score }}</p>
-    <p>Odkryte magazyny rodziny: {{ family.discovered_magazines }}</p>
-    <p>Kara czasowa: {{ patrol.time_penalty }} minut</p>
-    <p> magazyny: {{ family.assigned_magazines }}
-
-    <h2>Odnalezione magazyny</h2>
-    <div class="grid-container">
-        {% for row in range(10) %}
-            {% for col in range(10) %}
-                <div class="grid-item {% if 'ABCDEFGHIJ'[row] ~ (col + 1) in family.assigned_magazines %} magazine {% endif %}">
-                    {{ 'ABCDEFGHIJ'[row] ~ (col + 1) }}
-                </div>
-            {% endfor %}
-        {% endfor %}
+        </div>
     </div>
 </body>
 </html>

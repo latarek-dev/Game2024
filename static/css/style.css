@@ -26,8 +26,9 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #ccc;
     width: 80%;
-    max-width: 400px;
+    max-width: 600px;
     text-align: center;
+    margin: 20px;
 }
 
 /* Nagłówki */
@@ -72,6 +73,11 @@ input[type="submit"]:hover {
     color: #155724;
 }
 
+.flash-message.info {
+    background-color: #85b4be;
+    color: #27386d;
+}
+
 .flash-message.danger {
     background-color: #f8d7da;
     color: #721c24;
@@ -88,9 +94,10 @@ input[type="submit"]:hover {
     grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(10, 1fr);
     gap: 1px;
-    width: 300px;
-    height: 300px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    margin: 20px auto;
 }
 
 .grid-item {
@@ -104,4 +111,30 @@ input[type="submit"]:hover {
 .magazine {
     background-color: #f39c12;
     color: white;
+}
+
+@media (max-width: 600px) {
+    .grid-container {
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        max-width: 150px;
+    }
+
+    .grid-item {
+        height: 20px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 400px) {
+    .grid-container {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        max-width: 90px;
+    }
+
+    .grid-item {
+        height: 15px;
+        font-size: 8px;
+    }
 }
