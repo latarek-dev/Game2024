@@ -1,6 +1,107 @@
-.success {
-    color: green;
+/* style.css */
+
+/* Resetowanie domyślnych stylów */
+body, h1, h2, p, form, input {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-.danger {
-    color: red;
+
+/* Stylizacja ciała strony */
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Kontener dla zawartości strony */
+.container {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Nagłówki */
+h1, h2 {
+    margin-bottom: 20px;
+    font-weight: normal;
+}
+
+/* Formularze */
+form {
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="password"], input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* Flash messages */
+.flash-message {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.flash-message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash-message.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.flash-message.warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Stylizacja planszy */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 1px;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+}
+
+.grid-item {
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+}
+
+.magazine {
+    background-color: #f39c12;
+    color: white;
 }

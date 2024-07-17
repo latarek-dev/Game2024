@@ -3,6 +3,26 @@
 <head>
     <title>Zadanie</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 1px;
+            width: 300px;
+            height: 300px;
+        }
+        .grid-item {
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .magazine {
+            background-color: #f39c12; /* Customize this color as needed */
+            color: white; /* For better visibility of the text */
+        }
+    </style>
 </head>
 <body>
     <h1>Zadanie dla patrolu {{ patrol.name }}</h1>
@@ -24,5 +44,17 @@
     <p>Punkty patrolu: {{ patrol.score }}</p>
     <p>Odkryte magazyny rodziny: {{ family.discovered_magazines }}</p>
     <p>Kara czasowa: {{ patrol.time_penalty }} minut</p>
+    <p> magazyny: {{ family.assigned_magazines }}
+
+    <h2>Odnalezione magazyny</h2>
+    <div class="grid-container">
+        {% for row in range(10) %}
+            {% for col in range(10) %}
+                <div class="grid-item {% if 'ABCDEFGHIJ'[row] ~ (col + 1) in family.assigned_magazines %} magazine {% endif %}">
+                    {{ 'ABCDEFGHIJ'[row] ~ (col + 1) }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
 </body>
 </html>

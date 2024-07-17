@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.types import PickleType
 
 db = SQLAlchemy()
 
@@ -15,7 +17,7 @@ class Family(db.Model):
     name = db.Column(db.String(50), nullable=False)
     discovered_magazines = db.Column(db.Integer, default=0)
     patrols = db.relationship('Patrol', backref='family', lazy=True)
-    assigned_magazines = db.Column(db.PickleType, default=[])
+    assigned_magazines = db.Column(MutableList.as_mutable(PickleType), default=[])
 
 class UsedKeyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)

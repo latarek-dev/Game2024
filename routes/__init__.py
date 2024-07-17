@@ -14,6 +14,38 @@ password_map = {
     '5': 'Zielonka'
 }
 
+# Pula haseł
+valid_keywords = [
+    'skłodowska', 'skała', 'żyrafa', 'hipopotam', 'cytryna', 
+    'barć', 'hełm', 'chrobry', 'baron'
+]
+
+magazines_a = ['A7', 'A8', 'A9', 'A10', 'B2', 'C2', 'C4', 'C6', 'C9', 'D2',
+    'D6', 'D9', 'E6', 'E9', 'F3', 'F4', 'F6', 'G6', 'G10', 'H2', 'H6', 'I9',
+    'I10', 'J2', 'J3', 'J4', 'J5'
+    ]
+
+
+# Funkcja do przypisywania losowej współrzędnej magazynu rodzinie
+def assign_random_magazine(family):
+    if family.assigned_magazines is None:
+        family.assigned_magazines = []
+
+    if family.discovered_magazines is None:
+        family.discovered_magazines = 0
+
+    if not hasattr(family, 'assigned_magazines'):
+        family.assigned_magazines = []
+    
+    available_magazines = list(set(magazines_a) - set(family.assigned_magazines))
+    if available_magazines:
+        assigned_magazine = random.choice(available_magazines)
+        family.assigned_magazines.append(assigned_magazine)
+        family.discovered_magazines += 1  # Odkryj magazyn dla rodziny
+        db.session.commit()
+        return assigned_magazine
+    return None
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = LoginForm()
@@ -57,38 +89,6 @@ def index():
             flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
     return render_template('index.html', form=form)
 
-# Pula haseł
-valid_keywords = [
-    'skłodowska', 'skała', 'żyrafa', 'hipopotam', 'cytryna', 
-    'barć', 'hełm', 'chrobry', 'baron'
-]
-
-magazines_a = ['A7', 'A8', 'A9', 'A10', 'B2', 'C2', 'C4', 'C6', 'C9', 'D2',
-    'D6', 'D9', 'E6', 'E9', 'F3', 'F4', 'F6', 'G6', 'G10', 'H2', 'H6', 'I9',
-    'I10', 'J2', 'J3', 'J4', 'J5'
-    ]
-
-
-# Funkcja do przypisywania losowej współrzędnej magazynu rodzinie
-def assign_random_magazine(family):
-    if family.assigned_magazines is None:
-        family.assigned_magazines = []
-
-    if family.discovered_magazines is None:
-        family.discovered_magazines = 0
-
-    if not hasattr(family, 'assigned_magazines'):
-        family.assigned_magazines = []
-    
-    available_magazines = list(set(magazines_a) - set(family.assigned_magazines))
-    if available_magazines:
-        assigned_magazine = random.choice(available_magazines)
-        family.assigned_magazines.append(assigned_magazine)
-        family.discovered_magazines += 1  # Odkryj magazyn dla rodziny
-        db.session.commit()
-        return assigned_magazine
-    return None
-
 
 @main.route('/task/<int:patrol_id>', methods=['GET', 'POST'])
 def task(patrol_id):
@@ -99,6 +99,16 @@ def task(patrol_id):
     
     patrol = Patrol.query.get_or_404(patrol_id)
     family = Family.query.get_or_404(patrol.family_id)
+
+    # Inicjalizuj discovered_magazines, jeśli jest None
+    if family.discovered_magazines is None:
+        family.discovered_magazines = 0
+
+    # Inicjalizuj assigned_magazines, jeśli jest None
+    if family.assigned_magazines is None:
+        family.assigned_magazines = []
+
+    print(family.assigned_magazines)
 
     form = TaskForm()
     if form.validate_on_submit():
