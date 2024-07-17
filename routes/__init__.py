@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, session
 from forms import LoginForm, TaskForm
-from models import db, Patrol, UsedKeyword, Family
+from models import db, Patrol, UsedKeyword, Family, FamilyTask
 import random
 
 main = Blueprint('main', __name__)
@@ -14,19 +14,39 @@ password_map = {
     '5': 'Zielonka'
 }
 
-# Pula haseł
-valid_keywords = [
-    'skłodowska', 'skała', 'żyrafa', 'hipopotam', 'cytryna', 
-    'barć', 'hełm', 'chrobry', 'baron'
-]
-
 magazines_a = ['A7', 'A8', 'A9', 'A10', 'B2', 'C2', 'C4', 'C6', 'C9', 'D2',
     'D6', 'D9', 'E6', 'E9', 'F3', 'F4', 'F6', 'G6', 'G10', 'H2', 'H6', 'I9',
-    'I10', 'J2', 'J3', 'J4', 'J5'
-    ]
+    'I10', 'J2', 'J3', 'J4', 'J5']
 
+magazines_b = ['A1', 'A2', 'A3', 'A4', 'A8', 'C4', 'C7', 'C9', 'D1', 'D2',
+    'D4', 'D9', 'E4', 'E9', 'F4', 'F6', 'F7', 'G4', 'H1', 'H4', 'H7', 'H8',
+    'H9', 'J5', 'J6', 'J7', 'J8']
 
-# Funkcja do przypisywania losowej współrzędnej magazynu rodzinie
+magazines_c = ['A7', 'A8', 'B1', 'B2', 'B3', 'B4', 'C6', 'C9', 'D1', 'D6',
+    'D9','E1', 'E6', 'E9', 'F1', 'F3', 'F6', 'G1', 'G10', 'H1', 'H7', 'I1',
+     'I4', 'I7', 'I9', 'I10', 'J7']
+
+magazines_d = ['A10', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'C9', 'D4', 'D5',
+    'D6','D7', 'D9', 'E9', 'G1', 'G4', 'G5', 'G10', 'H7', 'I2', 'I3', 'I4', 
+    'I5', 'I7', 'I9', 'I10', 'J7']
+
+magazines_e = ['A3', 'A4', 'A5', 'A6', 'B9', 'C6', 'C7', 'C9', 'D1', 'D9',
+    'E1', 'E9', 'F1', 'F4', 'F5', 'F6', 'F9', 'G9', 'H2', 'H4', 'H6', 'I9', 
+    'J2', 'J3', 'J4', 'J5', 'J9']
+
+magazines_f = ['A9', 'B1', 'B2', 'B3', 'B4', 'B9', 'C6', 'C7', 'D1', 'D3', 
+    'E1', 'E10', 'F1', 'F4', 'F5', 'F6', 'F10', 'G10', 'H2', 'H8', 'H10', 'I10', 
+    'J5', 'J6', 'J7', 'J8', 'J10']
+
+magazine_lists = {
+    'a': magazines_a,
+    'b': magazines_b,
+    'c': magazines_c,
+    'd': magazines_d,
+    'e': magazines_e,
+    'f': magazines_f,
+}
+
 def assign_random_magazine(family):
     if family.assigned_magazines is None:
         family.assigned_magazines = []
@@ -34,15 +54,14 @@ def assign_random_magazine(family):
     if family.discovered_magazines is None:
         family.discovered_magazines = 0
 
-    if not hasattr(family, 'assigned_magazines'):
-        family.assigned_magazines = []
-    
-    available_magazines = list(set(magazines_a) - set(family.assigned_magazines))
+    available_magazines = list(set(magazine_lists[family.magazine_list]) - set(family.assigned_magazines))
     if available_magazines:
         assigned_magazine = random.choice(available_magazines)
         family.assigned_magazines.append(assigned_magazine)
         family.discovered_magazines += 1  # Odkryj magazyn dla rodziny
         db.session.commit()
+        print(f"Assigned magazine: {assigned_magazine}")
+        print(f"Updated assigned magazines: {family.assigned_magazines}")
         return assigned_magazine
     return None
 
@@ -72,7 +91,6 @@ def index():
                     new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
                     db.session.add(new_used_keyword)
 
-
                     # Przypisz losową współrzędną magazynu rodzinie przy pierwszym logowaniu
                     assigned_magazine = assign_random_magazine(family)
                     if assigned_magazine:
@@ -88,7 +106,6 @@ def index():
         else:
             flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
     return render_template('index.html', form=form)
-
 
 @main.route('/task/<int:patrol_id>', methods=['GET', 'POST'])
 def task(patrol_id):
@@ -113,13 +130,12 @@ def task(patrol_id):
     form = TaskForm()
     if form.validate_on_submit():
         keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
-        patrol_name_without_number = ''.join(filter(str.isalpha, patrol.name)).lower()  # Nazwa patrolu bez cyfry
         
         # Sprawdź, czy hasło zostało już użyte przez ten patrol
         if UsedKeyword.query.filter_by(patrol_id=patrol_id, keyword=keyword).first():
             flash('To hasło zostało już użyte', 'warning')
         else:
-            if keyword in valid_keywords or keyword == patrol_name_without_number:
+            if FamilyTask.query.filter_by(family_id=patrol.family_id, keyword=keyword).first():
                 patrol.score += 1
 
                 # Dodaj używane hasło do bazy danych tylko jeśli jest prawidłowe
