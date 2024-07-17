@@ -107,6 +107,7 @@ def index():
             flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
     return render_template('index.html', form=form)
 
+
 @main.route('/task/<int:patrol_id>', methods=['GET', 'POST'])
 def task(patrol_id):
     # Sprawdź, czy patrol_id w sesji jest taki sam jak w URL
@@ -154,9 +155,31 @@ def task(patrol_id):
                 # Sprawdź, czy rodzina odkryła wszystkie magazyny
                 if family.discovered_magazines >= 27:
                     flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
+                    return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
             else:
-                patrol.time_penalty += 5
-                db.session.commit()
-                flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                if family.discovered_magazines < 27:
+                    patrol.time_penalty += 5
+                    db.session.commit()
+                    flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                else:
+                    flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
     
     return render_template('task.html', form=form, patrol=patrol, family=family)
+
+
+@main.route('/winner')
+def winner():
+    # Pobierz identyfikator patrolu z sesji
+    if 'patrol_id' in session:
+        patrol = Patrol.query.get(session['patrol_id'])
+        family = Family.query.get(patrol.family_id)
+
+        # Sprawdź, czy rodzina odkryła wszystkie magazyny
+        if family.discovered_magazines >= 27:
+            return render_template('winner.html', patrol=patrol, family=family)
+        else:
+            flash('Nie masz uprawnień do tej strony.', 'danger')
+            return redirect(url_for('main.index'))
+    else:
+        flash('Nie jesteś zalogowany.', 'danger')
+        return redirect(url_for('main.index'))

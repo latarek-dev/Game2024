@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gratulacje!</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .congrats {
+            font-size: 2em;
+            color: #28a745;
+        }
+        .family-name {
+            font-size: 1.5em;
+            color: #007bff;
+        }
+        .back-link {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="congrats">Gratulacje!</h1>
+        <p class="family-name">Rodzina {{ family.name }} odkryła wszystkie magazyny!</p>
+        <p class="back-link"><a href="{{ url_for('main.index') }}">Powrót do strony głównej</a></p>
+    </div>
+</body>
+</html>
