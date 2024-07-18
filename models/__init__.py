@@ -20,6 +20,7 @@ class Family(db.Model):
     assigned_magazines = db.Column(MutableList.as_mutable(PickleType), default=[])
     tasks = db.relationship('FamilyTask', backref='family', lazy=True)
     magazine_list = db.Column(db.String(1), nullable=False, default='a')  # 'a', 'b', 'c', 'd', 'e', or 'f'
+    end_time = db.Column(db.DateTime, nullable=True)
 
 class UsedKeyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)

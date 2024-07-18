@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ranking</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .ranking {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        .ranking th, .ranking td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .ranking th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ranking Rodzin</h1>
+        <table class="ranking">
+            <tr>
+                <th>Miejsce</th>
+                <th>Rodzina</th>
+                <th>Czas zakończenia</th>
+                <th>Odkryte magazyny</th>
+            </tr>
+            {% for family in families %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ family.name }}</td>
+                <td>{{ family.end_time.strftime('%H:%M:%S') if family.end_time else 'Gra nie zakończona' }}</td>
+                <td>{{ family.discovered_magazines if family.discovered_magazines else 0}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

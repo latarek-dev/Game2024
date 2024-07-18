@@ -26,6 +26,7 @@
     <div class="container">
         <h1 class="congrats">Gratulacje!</h1>
         <p class="family-name">Rodzina {{ family.name }} odkryła wszystkie magazyny!</p>
+        <p>Wasze odkryte magazyny: {{ family.discovered_magazines }}</p>
         <p class="back-link"><a href="{{ url_for('main.index') }}">Powrót do strony głównej</a></p>
     </div>
 </body>

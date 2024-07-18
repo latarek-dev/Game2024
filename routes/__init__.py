@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, session
 from forms import LoginForm, TaskForm
 from models import db, Patrol, UsedKeyword, Family, FamilyTask
 import random
+from datetime import datetime
 
 main = Blueprint('main', __name__)
 
@@ -154,6 +155,8 @@ def task(patrol_id):
 
                 # Sprawdź, czy rodzina odkryła wszystkie magazyny
                 if family.discovered_magazines >= 27:
+                    family.end_time = datetime.now()
+                    db.session.commit()
                     flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
                     return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
             else:
@@ -183,3 +186,9 @@ def winner():
     else:
         flash('Nie jesteś zalogowany.', 'danger')
         return redirect(url_for('main.index'))
+
+
+@main.route('/ranking')
+def ranking():
+    families = Family.query.order_by(Family.end_time).all()
+    return render_template('ranking.html', families=families)
