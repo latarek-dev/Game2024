@@ -10,7 +10,7 @@
     }
     .ranking {
         width: 100%;
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
         border-collapse: collapse;
     }
@@ -48,14 +48,25 @@
             <th>Miejsce</th>
             <th>Rodzina</th>
             <th>Czas zakończenia</th>
+            <th>Czas trwania gry</th>
             <th>Odkryte magazyny</th>
+            <th>Sumaryczna kara czasowa</th>
         </tr>
         {% for family in families %}
         <tr>
             <td>{{ loop.index }}</td>
             <td>{{ family.name }}</td>
             <td>{{ family.end_time.strftime('%H:%M:%S') if family.end_time else 'Gra nie zakończona' }}</td>
-            <td>{{ family.discovered_magazines if family.discovered_magazines else 0}}</td>
+            <td>
+                {% if family.end_time %}
+                    {{ family.total_time // 3600 }}h 
+                    {{ (family.total_time % 3600) // 60 }}m
+                {% else %}
+                    Gra nie zakończona
+                {% endif %}
+            </td>
+            <td>{{ family.discovered_magazines }}</td>
+            <td>{{ family.total_penalty_time }} minut</td>
         </tr>
         {% endfor %}
     </table>

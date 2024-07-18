@@ -2,8 +2,8 @@ from datetime import datetime
 from models import db, Family
 
 # Czas rozpoczęcia i zakończenia gry
-GAME_START_TIME = datetime(2024, 7, 18, 21, 50, 30)
-GAME_END_TIME = datetime(2024, 7, 18, 22, 55, 30)
+GAME_START_TIME = datetime(2024, 7, 18, 14, 0, 0)
+GAME_END_TIME = datetime(2024, 7, 19, 2, 55, 30)
 
 def game_in_progress():
     now = datetime.now()

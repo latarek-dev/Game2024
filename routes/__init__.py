@@ -203,10 +203,28 @@ def winner():
         return redirect(url_for('main.index'))
 
 
+# routes.py
+
 @main.route('/ranking')
 def ranking():
-    families = Family.query.order_by(Family.end_time).all()
-    return render_template('ranking.html', families=families)
+    families = Family.query.all()
+
+    # Filter out families with discovered_magazines as None or 0
+    families = [f for f in families if f.discovered_magazines]
+
+    for family in families:
+        # Calculate total penalty time for the family
+        total_penalty_time = sum(patrol.time_penalty for patrol in family.patrols if patrol.time_penalty)
+        family.total_penalty_time = total_penalty_time  # Add this attribute dynamically for sorting and displaying purposes
+        family.total_time = ((family.end_time - GAME_START_TIME).total_seconds() + total_penalty_time * 60) if family.end_time else float('inf')
+
+    # Sort families by total_time and then by discovered_magazines
+    families = sorted(families, key=lambda f: (
+        f.total_time,
+        -f.discovered_magazines
+    ))
+
+    return render_template('ranking.html', families=families, game_start_time=GAME_START_TIME)
 
 
 @main.route('/status')
