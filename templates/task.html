@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Zadanie</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+{% extends "base.html" %}
+
+{% block title %}Zadanie{% endblock %}
+
+{% block head %}
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -93,55 +92,53 @@
             }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Zadanie dla patrolu {{ patrol.name }}</h1>
+{% endblock %}
 
-        <!-- Wyświetlanie wiadomości flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+{% block content %}
+    <h1>Zadanie dla patrolu {{ patrol.name }}</h1>
 
-        {% if game_not_started %}
-            <div class="flash-message danger">
-                Gra jeszcze się nie rozpoczęła.
-            </div>
-        {% elif game_ended %}
-            <div class="flash-message danger">
-                Gra już się zakończyła. Nie można wpisywać haseł.
-            </div>
-        {% else %}
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    {{ form.keyword.label }} {{ form.keyword(size=32) }}
-                </div>
-                <div class="form-group">
-                    <input type="submit" class="btn" value="Wyślij">
-                </div>
-            </form>
-        {% endif %}
-
-        <p>Odkryte magazyny rodziny: {{ family.discovered_magazines }}</p>
-        <p>Kara czasowa patrolu: {{ patrol.time_penalty }} minut</p>
-        
-        <br>
-
-        <h2>Odnalezione magazyny</h2>
-        <div class="grid-container">
-            {% for row in range(10) %}
-                {% for col in range(10) %}
-                    <div class="grid-item {% if 'ABCDEFGHIJ'[row] ~ (col + 1) in family.assigned_magazines %} magazine {% endif %}">
-                        {{ 'ABCDEFGHIJ'[row] ~ (col + 1) }}
-                    </div>
-                {% endfor %}
+    <!-- Wyświetlanie wiadomości flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">{{ message }}</div>
             {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if game_not_started %}
+        <div class="flash-message danger">
+            Gra jeszcze się nie rozpoczęła.
         </div>
+    {% elif game_ended %}
+        <div class="flash-message danger">
+            Gra już się zakończyła. Nie można wpisywać haseł.
+        </div>
+    {% else %}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.keyword.label }} {{ form.keyword(size=32) }}
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn" value="Wyślij">
+            </div>
+        </form>
+    {% endif %}
+
+    <p>Odkryte magazyny rodziny: {{ family.discovered_magazines }}</p>
+    <p>Kara czasowa patrolu: {{ patrol.time_penalty }} minut</p>
+
+    <br>
+
+    <h2>Odnalezione magazyny</h2>
+    <div class="grid-container">
+        {% for row in range(10) %}
+            {% for col in range(10) %}
+                <div class="grid-item {% if 'ABCDEFGHIJ'[row] ~ (col + 1) in family.assigned_magazines %} magazine {% endif %}">
+                    {{ 'ABCDEFGHIJ'[row] ~ (col + 1) }}
+                </div>
+            {% endfor %}
+        {% endfor %}
     </div>
-</body>
-</html>
+{% endblock %}

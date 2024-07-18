@@ -93,7 +93,7 @@ def index():
                 # Sprawdź czy punkt za pierwsze logowanie został już przyznany
                 first_login_keyword = f'{form.password.data}'
                 if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
-                    
+
                     new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
                     db.session.add(new_used_keyword)
 
@@ -173,9 +173,12 @@ def task(patrol_id):
                         return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
                 else:
                     if family.discovered_magazines < 27:
-                        patrol.time_penalty += 5
-                        db.session.commit()
-                        flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                        if patrol.time_penalty < 25:
+                            patrol.time_penalty += 5
+                            db.session.commit()
+                            flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                        else:
+                            flash('Osiągnięto maksymalną liczbę kar dla tego patrolu.', 'danger')
                     else:
                         flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
         

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Gra{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px; /* Dodany padding */
+        }
+        .navbar {
+            background-color: #fff;
+            border-bottom: 1px solid #ccc;
+            width: 90%;
+            padding: 10px 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .navbar a {
+            color: #333;
+            padding: 14px 10px;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            margin: 0 px; /* Spacing between links */
+            border-radius: 4px;
+        }
+        .navbar a:hover {
+            background-color: #f4f4f4;
+            color: #000;
+        }
+        .navbar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap; /* Dodano flex-wrap dla lepszego dopasowania do mniejszych ekranów */
+            overflow-x: auto;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ccc;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-container">
+            <a href="{{ url_for('main.index') }}">Strona główna</a>
+            <a href="{{ url_for('main.task', patrol_id=session.get('patrol_id', 1)) }}">Zadania</a>
+            <a href="{{ url_for('main.status') }}">Status</a>
+            <a href="{{ url_for('main.ranking') }}">Ranking</a>
+        </div>
+    </div>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

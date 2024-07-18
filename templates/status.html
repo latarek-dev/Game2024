@@ -1,96 +1,102 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <title>Status Gry</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+{% extends "base.html" %}
+
+{% block title %}Status Gry{% endblock %}
+
+{% block head %}
+<style>
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        background-color: #f4f4f4;
+        color: #333;
+    }
+    .status-container {
+        background: #fff;
+        padding: 20px 40px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        margin: 20px auto;
+    }
+    h1 {
+        color: #444;
+        margin-bottom: 20px;
+        font-size: 2em;
+    }
+    .status-item {
+        margin: 15px 0;
+        font-size: 1.2em;
+        word-wrap: break-word;
+    }
+    .timer {
+        font-size: 3em;
+        color: #e74c3c;
+        font-weight: bold;
+        margin-top: 20px;
+        white-space: nowrap;
+    }
+    .not-started, .game-ended {
+        font-size: 2em;
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    @media (max-width: 600px) {
         .status-container {
-            background: #fff;
-            padding: 20px 40px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
+            padding: 20px 10px;
         }
         h1 {
-            color: #444;
-            margin-bottom: 20px;
-            font-size: 2em;
+            font-size: 1.5em;
         }
         .status-item {
-            margin: 15px 0;
-            font-size: 1.2em;
-            word-wrap: break-word;
+            font-size: 1em;
         }
         .timer {
-            font-size: 3em;
-            color: #e74c3c;
-            font-weight: bold;
-            margin-top: 20px;
-            white-space: nowrap;
-        }
-        .not-started {
             font-size: 2em;
-            color: #e74c3c;
-            font-weight: bold;
         }
-        .game-ended {
-            font-size: 2em;
-            color: #e74c3c;
-            font-weight: bold;
+        .not-started, .game-ended {
+            font-size: 1.5em;
         }
-    </style>
-    <script>
-        function updateTimeLeft(endTime) {
-            const now = new Date().getTime();
-            const timeLeft = endTime - now;
+    }
+</style>
+<script>
+    function updateTimeLeft(endTime) {
+        const now = new Date().getTime();
+        const timeLeft = endTime - now;
 
-            if (timeLeft < 0) {
-                document.getElementById('time-left').innerText = 'Gra zakończona';
-                return;
-            }
-
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-            document.getElementById('time-left').innerText = hours + "h " 
-                + minutes + "m " + seconds + "s ";
+        if (timeLeft < 0) {
+            document.getElementById('time-left').innerText = 'Gra zakończona';
+            return;
         }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const endTime = new Date("{{ game_end_time.strftime('%Y-%m-%d %H:%M:%S') }}").getTime();
-            updateTimeLeft(endTime);
-            setInterval(() => updateTimeLeft(endTime), 1000);
-        });
-    </script>
-</head>
-<body>
-    <div class="status-container">
-        <h1>Status Gry</h1>
-        {% if not game_in_progress and not game_ended %}
-            <div class="not-started">Gra nie rozpoczęta</div>
-        {% elif game_ended %}
-            <div class="game-ended">Gra zakończona</div>
-        {% else %}
-            <div class="status-item">Gra w toku: {{ 'Tak' if game_in_progress else 'Nie' }}</div>
-            <div class="status-item">Pozostały czas: <span id="time-left" class="timer"></span></div>
-        {% endif %}
-        <div class="status-item">Czas rozpoczęcia gry: {{ game_start_time.strftime('%H:%M:%S') }}</div>
-        <div class="status-item">Czas zakończenia gry: {{ game_end_time.strftime('%H:%M:%S') }}</div>
-    </div>
-</body>
-</html>
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        document.getElementById('time-left').innerText = hours + "h " 
+            + minutes + "m " + seconds + "s ";
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const endTime = new Date("{{ game_end_time.strftime('%Y-%m-%d %H:%M:%S') }}").getTime();
+        updateTimeLeft(endTime);
+        setInterval(() => updateTimeLeft(endTime), 1000);
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="status-container">
+    <h1>Status Gry</h1>
+    {% if not game_in_progress and not game_ended %}
+        <div class="not-started">Gra nie rozpoczęta</div>
+    {% elif game_ended %}
+        <div class="game-ended">Gra zakończona</div>
+    {% else %}
+        <div class="status-item">Gra w toku: {{ 'Tak' if game_in_progress else 'Nie' }}</div>
+        <div class="status-item">Pozostały czas: <span id="time-left" class="timer"></span></div>
+    {% endif %}
+    <div class="status-item">Czas rozpoczęcia gry: {{ game_start_time.strftime('%H:%M:%S') }}</div>
+    <div class="status-item">Czas zakończenia gry: {{ game_end_time.strftime('%H:%M:%S') }}</div>
+</div>
+{% endblock %}
