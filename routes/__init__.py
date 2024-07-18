@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session
+from flask import Blueprint, render_template, redirect, url_for, flash, session, jsonify
 from forms import LoginForm, TaskForm
 from models import db, Patrol, UsedKeyword, Family, FamilyTask
 import random
 from datetime import datetime
+from game_status import game_in_progress, time_left, GAME_START_TIME, GAME_END_TIME
 
 main = Blueprint('main', __name__)
 
@@ -70,6 +71,10 @@ def assign_random_magazine(family):
 def index():
     form = LoginForm()
     if form.validate_on_submit():
+        if not game_in_progress() and datetime.now() < GAME_START_TIME:
+            flash('Gra jeszcze się nie rozpoczęła.', 'warning')
+            return redirect(url_for('main.status'))
+
         patrol_id = form.patrol_id.data
         # Pobierz numer końcowy z patrol_id
         patrol_number = patrol_id[-1]
@@ -88,7 +93,7 @@ def index():
                 # Sprawdź czy punkt za pierwsze logowanie został już przyznany
                 first_login_keyword = f'{form.password.data}'
                 if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
-                    patrol.score += 1
+                    
                     new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
                     db.session.add(new_used_keyword)
 
@@ -111,6 +116,10 @@ def index():
 
 @main.route('/task/<int:patrol_id>', methods=['GET', 'POST'])
 def task(patrol_id):
+    if not game_in_progress() and datetime.now() < GAME_START_TIME:
+        flash('Gra jeszcze się nie rozpoczęła.', 'danger')
+        return redirect(url_for('main.status'))
+
     # Sprawdź, czy patrol_id w sesji jest taki sam jak w URL
     if 'patrol_id' not in session or session['patrol_id'] != patrol_id:
         flash('Nie jesteś zalogowany jako ten patrol', 'danger')
@@ -127,47 +136,50 @@ def task(patrol_id):
     if family.assigned_magazines is None:
         family.assigned_magazines = []
 
-    print(family.assigned_magazines)
+    game_not_started = datetime.now() < GAME_START_TIME
+    game_ended = datetime.now() > GAME_END_TIME
 
     form = TaskForm()
     if form.validate_on_submit():
-        keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
-        
-        # Sprawdź, czy hasło zostało już użyte przez ten patrol
-        if UsedKeyword.query.filter_by(patrol_id=patrol_id, keyword=keyword).first():
-            flash('To hasło zostało już użyte', 'warning')
+        if game_ended:
+            flash('Zajrzyj do rankingu by zobaczyć jak sobie poradziła twoja rodzina.', 'info')
         else:
-            if FamilyTask.query.filter_by(family_id=patrol.family_id, keyword=keyword).first():
-                patrol.score += 1
-
-                # Dodaj używane hasło do bazy danych tylko jeśli jest prawidłowe
-                new_used_keyword = UsedKeyword(keyword=keyword, patrol_id=patrol_id)
-                db.session.add(new_used_keyword)
-
-                # Przypisz losową współrzędną magazynu rodzinie
-                assigned_magazine = assign_random_magazine(family)
-                if assigned_magazine:
-                    flash(f'Hasło poprawne! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
-                else:
-                    flash('Hasło poprawne, ale wszystkie magazyny zostały już odkryte.', 'success')
-                
-                db.session.commit()
-
-                # Sprawdź, czy rodzina odkryła wszystkie magazyny
-                if family.discovered_magazines >= 27:
-                    family.end_time = datetime.now()
-                    db.session.commit()
-                    flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
-                    return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
+            keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
+            
+            # Sprawdź, czy hasło zostało już użyte przez ten patrol
+            if UsedKeyword.query.filter_by(patrol_id=patrol_id, keyword=keyword).first():
+                flash('To hasło zostało już użyte', 'warning')
             else:
-                if family.discovered_magazines < 27:
-                    patrol.time_penalty += 5
+                if FamilyTask.query.filter_by(family_id=patrol.family_id, keyword=keyword).first():
+
+                    # Dodaj używane hasło do bazy danych tylko jeśli jest prawidłowe
+                    new_used_keyword = UsedKeyword(keyword=keyword, patrol_id=patrol_id)
+                    db.session.add(new_used_keyword)
+
+                    # Przypisz losową współrzędną magazynu rodzinie
+                    assigned_magazine = assign_random_magazine(family)
+                    if assigned_magazine:
+                        flash(f'Hasło poprawne! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
+                    else:
+                        flash('Hasło poprawne, ale wszystkie magazyny zostały już odkryte.', 'success')
+                    
                     db.session.commit()
-                    flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+
+                    # Sprawdź, czy rodzina odkryła wszystkie magazyny
+                    if family.discovered_magazines >= 27:
+                        family.end_time = datetime.now()
+                        db.session.commit()
+                        flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
+                        return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
                 else:
-                    flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
-    
-    return render_template('task.html', form=form, patrol=patrol, family=family)
+                    if family.discovered_magazines < 27:
+                        patrol.time_penalty += 5
+                        db.session.commit()
+                        flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                    else:
+                        flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
+        
+    return render_template('task.html', form=form, patrol=patrol, family=family, game_not_started=game_not_started, game_ended=game_ended)
 
 
 @main.route('/winner')
@@ -192,3 +204,15 @@ def winner():
 def ranking():
     families = Family.query.order_by(Family.end_time).all()
     return render_template('ranking.html', families=families)
+
+
+@main.route('/status')
+def status():
+    game_started = datetime.now() >= GAME_START_TIME
+    game_ended = datetime.now() > GAME_END_TIME
+    return render_template('status.html', 
+                           game_in_progress=game_in_progress(), 
+                           time_left=time_left(), 
+                           game_start_time=GAME_START_TIME, 
+                           game_end_time=GAME_END_TIME,
+                           game_ended=game_ended)
