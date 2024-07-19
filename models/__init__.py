@@ -20,6 +20,7 @@ class Family(db.Model):
     tasks = db.relationship('FamilyTask', backref='family', lazy=True)
     magazine_list = db.Column(db.String(1), nullable=False, default='a')  # 'a', 'b', 'c', 'd', 'e', or 'f'
     end_time = db.Column(db.DateTime, nullable=True)
+    route = db.Column(db.String(1), nullable=False)  # Dodane pole dla drogi ('a' albo 'b')
 
 class UsedKeyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)

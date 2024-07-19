@@ -207,24 +207,39 @@ def winner():
 
 @main.route('/ranking')
 def ranking():
-    families = Family.query.all()
+    # Pobierz ID patrolu z sesji
+    patrol_id = session.get('patrol_id')
+    if not patrol_id:
+        flash('Nie jesteś zalogowany.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    # Pobierz patrol i rodzinę z bazy danych
+    patrol = Patrol.query.get(patrol_id)
+    if not patrol or not patrol.family:
+        flash('Nie znaleziono patrolu lub rodziny.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    family = patrol.family
+    route = family.route  # Pobierz drogę rodziny
 
-    # Filter out families with discovered_magazines as None or 0
+    families = Family.query.filter_by(route=route).all()
+
+    # Filtruj rodziny, które nie odkryły żadnych magazynów
     families = [f for f in families if f.discovered_magazines]
 
     for family in families:
-        # Calculate total penalty time for the family
+        # Oblicz sumaryczny czas kar dla rodziny
         total_penalty_time = sum(patrol.time_penalty for patrol in family.patrols if patrol.time_penalty)
-        family.total_penalty_time = total_penalty_time  # Add this attribute dynamically for sorting and displaying purposes
+        family.total_penalty_time = total_penalty_time  # Dodaj to pole dynamicznie
         family.total_time = ((family.end_time - GAME_START_TIME).total_seconds() + total_penalty_time * 60) if family.end_time else float('inf')
 
-    # Sort families by total_time and then by discovered_magazines
+    # Sortuj rodziny po total_time i potem po discovered_magazines
     families = sorted(families, key=lambda f: (
         f.total_time,
         -f.discovered_magazines
     ))
 
-    return render_template('ranking.html', families=families, game_start_time=GAME_START_TIME)
+    return render_template('ranking.html', families=families, game_start_time=GAME_START_TIME, route=route)
 
 
 @main.route('/status')
