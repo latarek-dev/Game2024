@@ -91,20 +91,23 @@ def index():
                 
                 family = Family.query.get_or_404(patrol.family_id)
                 # Sprawdź czy punkt za pierwsze logowanie został już przyznany
-                first_login_keyword = f'{form.password.data}'
-                if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
-
-                    new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
-                    db.session.add(new_used_keyword)
-
-                    # Przypisz losową współrzędną magazynu rodzinie przy pierwszym logowaniu
-                    assigned_magazine = assign_random_magazine(family)
-                    if assigned_magazine:
-                        flash(f'Punkt za pierwsze logowanie! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
-
-                    db.session.commit()
+                if not game_in_progress() and datetime.now() > GAME_END_TIME:
+                    flash('Gra już dawno się skońćzyła. Nie dostaniesz punktu za pierwsze logowanie.', 'warning')
                 else:
-                    flash('Zalogowano ponownie.', 'info')
+                    first_login_keyword = f'{form.password.data}'
+                    if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
+
+                        new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
+                        db.session.add(new_used_keyword)
+
+                        # Przypisz losową współrzędną magazynu rodzinie przy pierwszym logowaniu
+                        assigned_magazine = assign_random_magazine(family)
+                        if assigned_magazine:
+                            flash(f'Punkt za pierwsze logowanie! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
+
+                        db.session.commit()
+                    else:
+                        flash('Zalogowano ponownie.', 'info')
                 db.session.commit()
                 return redirect(url_for('main.task', patrol_id=patrol.id))
             else:

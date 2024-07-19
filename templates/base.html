@@ -65,7 +65,7 @@
 <body>
     <div class="navbar">
         <div class="navbar-container">
-            <a href="{{ url_for('main.index') }}">Strona główna</a>
+            <a href="{{ url_for('main.index') }}">Logowanie</a>
             <a href="{{ url_for('main.task', patrol_id=session.get('patrol_id', 1)) }}">Zadania</a>
             <a href="{{ url_for('main.status') }}">Status</a>
             <a href="{{ url_for('main.ranking') }}">Ranking</a>
