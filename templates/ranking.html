@@ -2,73 +2,41 @@
 
 {% block title %}Ranking{% endblock %}
 
-{% block head %}
-<style>
-    .container {
-        text-align: center;
-        margin-top: 50px;
-    }
-    .ranking {
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-        border-collapse: collapse;
-    }
-    .ranking th, .ranking td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-    .ranking th {
-        background-color: #f2f2f2;
-    }
-    .ranking tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    .ranking tr:hover {
-        background-color: #f1f1f1;
-    }
-    @media (max-width: 600px) {
-        .ranking {
-            width: 100%;
-        }
-        .ranking th, .ranking td {
-            font-size: 12px;
-            padding: 4px;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container">
-    <h1>Ranking Rodzin - Droga {{ 'Młodsza' if route == 'a' else 'Starsza' }}</h1>
-    <table class="ranking">
-        <tr>
-            <th>Miejsce</th>
-            <th>Rodzina</th>
-            <th>Czas zakończenia</th>
-            <th>Czas trwania gry</th>
-            <th>Odkryte magazyny</th>
-            <th>Sumaryczna kara czasowa</th>
-        </tr>
-        {% for family in families %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ family.name }}</td>
-            <td>{{ family.end_time.strftime('%H:%M:%S') if family.end_time else 'Gra nie zakończona' }}</td>
-            <td>
-                {% if family.end_time %}
-                    {{ family.total_time // 3600 }}h 
-                    {{ (family.total_time % 3600) // 60 }}m
-                {% else %}
-                    Gra nie zakończona
-                {% endif %}
-            </td>
-            <td>{{ family.discovered_magazines }}</td>
-            <td>{{ family.total_penalty_time }} minut</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h1 class="text-center">Ranking Rodzin - Droga {{ 'Młodsza' if route == 'a' else 'Starsza' }}</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Miejsce</th>
+                    <th>Rodzina</th>
+                    <th>Czas zakończenia</th>
+                    <th>Czas trwania gry</th>
+                    <th>Odkryte magazyny</th>
+                    <th>Sumaryczna kara czasowa</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for family in families %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ family.name }}</td>
+                    <td>{{ family.end_time.strftime('%H:%M:%S') if family.end_time else 'Gra nie zakończona' }}</td>
+                    <td>
+                        {% if family.end_time %}
+                            {{ family.total_time // 3600 }}h 
+                            {{ (family.total_time % 3600) // 60 }}m
+                        {% else %}
+                            Gra nie zakończona
+                        {% endif %}
+                    </td>
+                    <td>{{ family.discovered_magazines }}</td>
+                    <td>{{ family.total_penalty_time }} minut</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

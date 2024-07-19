@@ -3,86 +3,86 @@
 {% block title %}Status Gry{% endblock %}
 
 {% block head %}
-<style>
-    body {
-        font-family: 'Courier New', Courier, monospace;
-        background-color: #f4f4f4;
-        color: #333;
-    }
-    .status-container {
-        background: #fff;
-        padding: 20px 40px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        text-align: center;
-        max-width: 500px;
-        width: 100%;
-        margin: 20px auto;
-    }
-    h1 {
-        color: #444;
-        margin-bottom: 20px;
-        font-size: 2em;
-    }
-    .status-item {
-        margin: 15px 0;
-        font-size: 1.2em;
-        word-wrap: break-word;
-    }
-    .timer {
-        font-size: 3em;
-        color: #e74c3c;
-        font-weight: bold;
-        margin-top: 20px;
-        white-space: nowrap;
-    }
-    .not-started, .game-ended {
-        font-size: 2em;
-        color: #e74c3c;
-        font-weight: bold;
-    }
-    @media (max-width: 600px) {
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
         .status-container {
-            padding: 20px 10px;
+            background: #fff;
+            padding: 20px 40px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin: 20px auto;
         }
         h1 {
-            font-size: 1.5em;
-        }
-        .status-item {
-            font-size: 1em;
-        }
-        .timer {
+            color: #444;
+            margin-bottom: 20px;
             font-size: 2em;
         }
+        .status-item {
+            margin: 15px 0;
+            font-size: 1.2em;
+            word-wrap: break-word;
+        }
+        .timer {
+            font-size: 3em;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 20px;
+            white-space: nowrap;
+        }
         .not-started, .game-ended {
-            font-size: 1.5em;
+            font-size: 2em;
+            color: #e74c3c;
+            font-weight: bold;
         }
-    }
-</style>
-<script>
-    function updateTimeLeft(endTime) {
-        const now = new Date().getTime();
-        const timeLeft = endTime - now;
+        @media (max-width: 600px) {
+            .status-container {
+                padding: 20px 10px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .status-item {
+                font-size: 1em;
+            }
+            .timer {
+                font-size: 2em;
+            }
+            .not-started, .game-ended {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+    <script>
+        function updateTimeLeft(endTime) {
+            const now = new Date().getTime();
+            const timeLeft = endTime - now;
 
-        if (timeLeft < 0) {
-            document.getElementById('time-left').innerText = 'Gra zakończona';
-            return;
+            if (timeLeft < 0) {
+                document.getElementById('time-left').innerText = 'Gra zakończona';
+                return;
+            }
+
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            document.getElementById('time-left').innerText = hours + "h " 
+                + minutes + "m " + seconds + "s ";
         }
 
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        document.getElementById('time-left').innerText = hours + "h " 
-            + minutes + "m " + seconds + "s ";
-    }
-
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const endTime = new Date("{{ game_end_time.strftime('%Y-%m-%d %H:%M:%S') }}").getTime();
-        updateTimeLeft(endTime);
-        setInterval(() => updateTimeLeft(endTime), 1000);
-    });
-</script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const endTime = new Date("{{ game_end_time.strftime('%Y-%m-%d %H:%M:%S') }}").getTime();
+            updateTimeLeft(endTime);
+            setInterval(() => updateTimeLeft(endTime), 1000);
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
