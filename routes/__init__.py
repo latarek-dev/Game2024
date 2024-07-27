@@ -9,11 +9,11 @@ main = Blueprint('main', __name__)
 
 # Mapowanie numeru końcowego na hasło
 password_map = {
-    '1': 'Zabrze',
-    '2': 'Zawiercie',
-    '3': 'Bydgoszcz',
-    '4': 'Konin',
-    '5': 'Zielonka'
+    '1': 'zabrze',
+    '2': 'zawiercie',
+    '3': 'bydgoszcz',
+    '4': 'konin',
+    '5': 'zielonka'
 }
 
 magazines_a = ['A7', 'A8', 'A9', 'A10', 'B2', 'C2', 'C4', 'C6', 'C9', 'D2',
@@ -85,14 +85,14 @@ def index():
             expected_password = password_map[patrol_number]
             patrol = Patrol.query.filter_by(name=patrol_id).first()
 
-            if patrol and form.password.data == expected_password:
+            if patrol and form.password.data.lower() == expected_password:
                 # Zapisz identyfikator patrolu w sesji
                 session['patrol_id'] = patrol.id
                 
                 family = Family.query.get_or_404(patrol.family_id)
                 # Sprawdź czy punkt za pierwsze logowanie został już przyznany
                 
-                first_login_keyword = f'{form.password.data}'
+                first_login_keyword = f'{form.password.data.lower()}'
                 if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
 
                     new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
@@ -206,8 +206,6 @@ def winner():
         flash('Nie jesteś zalogowany.', 'danger')
         return redirect(url_for('main.index'))
 
-
-# routes.py
 
 @main.route('/ranking')
 def ranking():

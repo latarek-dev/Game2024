@@ -5,7 +5,7 @@ INSERT INTO Family (id, name, magazine_list, route) VALUES
 (4, 'jaśmin', 'd', 'a'),
 (5, 'jeżówka', 'e', 'a'),
 (6, 'kocimiętka', 'f', 'a'),
-(7, 'kolon', 'a', 'a'),
+(7, 'klon', 'a', 'a'),
 (8, 'koniczyna', 'b', 'a'),
 (9, 'konwalia', 'c', 'a'),
 (10, 'krwawnica', 'd', 'a'),
@@ -54,4 +54,6 @@ INSERT INTO Family (id, name, magazine_list, route) VALUES
 (53, 'floks', 'e', 'b'),
 (54, 'gazania', 'f', 'b'),
 (55, 'głóg', 'a', 'b'),
-(56, 'gryka', 'b', 'b');
+(56, 'gryka', 'b', 'b'),
+(57, 'żurawka', 'c', 'a'),
+(58, 'żeniszek', 'd', 'a');
