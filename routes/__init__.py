@@ -49,6 +49,7 @@ magazine_lists = {
     'f': magazines_f,
 }
 
+
 def assign_random_magazine(family):
     if family.assigned_magazines is None:
         family.assigned_magazines = []
@@ -62,10 +63,16 @@ def assign_random_magazine(family):
         family.assigned_magazines.append(assigned_magazine)
         family.discovered_magazines += 1  # Odkryj magazyn dla rodziny
         db.session.commit()
-        print(f"Assigned magazine: {assigned_magazine}")
-        print(f"Updated assigned magazines: {family.assigned_magazines}")
         return assigned_magazine
     return None
+
+
+def count_logged_in_patrols(family):
+    return Patrol.query.filter(
+        Patrol.family_id == family.id,
+        UsedKeyword.patrol_id == Patrol.id
+    ).distinct(Patrol.id).count()
+
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -148,44 +155,54 @@ def task(patrol_id):
         if game_ended:
             flash('Zajrzyj do rankingu by zobaczyć jak sobie poradziła twoja rodzina.', 'info')
         else:
-            keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
-            
-            # Sprawdź, czy hasło zostało już użyte przez ten patrol
-            if UsedKeyword.query.filter_by(patrol_id=patrol_id, keyword=keyword).first():
-                flash('To hasło zostało już użyte', 'warning')
-            else:
-                if FamilyTask.query.filter_by(family_id=patrol.family_id, keyword=keyword).first():
+            # Sprawdź maksymalną liczbę możliwych do odkrycia magazynów
+            count_logged = count_logged_in_patrols(family)
+            print(count_logged)
+            max_discoverable_magazines = 27 - (5 - count_logged)
+            if family.discovered_magazines >= max_discoverable_magazines and count_logged != 5:
+                flash('Nie możesz zdobyć więcej punktów, ponieważ nie wszystkie patrole się zalogowały na punkcie startowym.', 'warning')
+                db.session.commit()
+                return redirect(url_for('main.task', patrol_id=patrol.id))
 
-                    # Dodaj używane hasło do bazy danych tylko jeśli jest prawidłowe
-                    new_used_keyword = UsedKeyword(keyword=keyword, patrol_id=patrol_id)
-                    db.session.add(new_used_keyword)
-
-                    # Przypisz losową współrzędną magazynu rodzinie
-                    assigned_magazine = assign_random_magazine(family)
-                    if assigned_magazine:
-                        flash(f'Hasło poprawne! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
-                    else:
-                        flash('Hasło poprawne, ale wszystkie magazyny zostały już odkryte.', 'success')
-                    
-                    db.session.commit()
-
-                    # Sprawdź, czy rodzina odkryła wszystkie magazyny
-                    if family.discovered_magazines >= 27:
-                        family.end_time = datetime.now()
-                        db.session.commit()
-                        flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
-                        return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
+            else: 
+                keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
+                
+                # Sprawdź, czy hasło zostało już użyte przez ten patrol
+                if UsedKeyword.query.filter_by(patrol_id=patrol_id, keyword=keyword).first():
+                    flash('To hasło zostało już użyte', 'warning')
                 else:
-                    if family.discovered_magazines < 27:
-                        if patrol.time_penalty < 25:
-                            patrol.time_penalty += 5
-                            db.session.commit()
-                            flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                    if FamilyTask.query.filter_by(family_id=patrol.family_id, keyword=keyword).first():
+                        
+                        # Dodaj używane hasło do bazy danych tylko jeśli jest prawidłowe
+                        new_used_keyword = UsedKeyword(keyword=keyword, patrol_id=patrol_id)
+                        db.session.add(new_used_keyword)
+
+                        # Przypisz losową współrzędną magazynu rodzinie
+                        assigned_magazine = assign_random_magazine(family)
+                        if assigned_magazine:
+                            flash(f'Hasło poprawne! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
                         else:
-                            flash('Osiągnięto maksymalną liczbę kar dla tego patrolu.', 'danger')
+                            flash('Hasło poprawne, ale wszystkie magazyny zostały już odkryte.', 'success')
+                        
+                        db.session.commit()
+
+                        # Sprawdź, czy rodzina odkryła wszystkie magazyny
+                        if family.discovered_magazines >= 27:
+                            family.end_time = datetime.now()
+                            db.session.commit()
+                            flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
+                            return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
                     else:
-                        flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
-        
+                        if family.discovered_magazines < 27:
+                            if patrol.time_penalty < 25:
+                                patrol.time_penalty += 5
+                                db.session.commit()
+                                flash('Niepoprawne hasło! Kara: 5 minut', 'danger')
+                            else:
+                                flash('Osiągnięto maksymalną liczbę kar dla tego patrolu.', 'danger')
+                        else:
+                            flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
+            
     return render_template('task.html', form=form, patrol=patrol, family=family, game_not_started=game_not_started, game_ended=game_ended)
 
 

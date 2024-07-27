@@ -3,7 +3,7 @@ import shutil
 import sqlite3
 
 # Ścieżka do pliku bazy danych
-db_path = 'instance/database.db'
+db_path = os.path.join('instance', 'database.db')
 
 # Usunięcie pliku bazy danych
 if os.path.exists(db_path):
@@ -26,16 +26,22 @@ def execute_sql_file(db_path, sql_file):
     conn.executescript(sql)
     conn.close()
 
+# Ścieżka do katalogu z plikami SQL
+sql_dir = 'sql'
 
 # Lista plików SQL do wykonania
 sql_files = [
-    'sql\\insert_family.sql',
-    'sql\\insert_patrol.sql',
-    'sql\\insert_family_task.sql'
+    'insert_family.sql',
+    'insert_patrol.sql',
+    'insert_family_task.sql'
 ]
 
 # Wykonaj pliki SQL
 for sql_file in sql_files:
-    execute_sql_file(db_path, sql_file)
+    sql_path = os.path.join(sql_dir, sql_file)
+    if os.path.exists(sql_path):
+        execute_sql_file(db_path, sql_path)
+    else:
+        print(f"Plik {sql_path} nie został znaleziony")
 
 print("Baza danych została zresetowana i zainicjalizowana na nowo.")
