@@ -1,9 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, session, jsonify
-from forms import LoginForm, TaskForm
+from forms import LoginForm, TaskForm, ChangePasswordForm
 from models import db, Patrol, UsedKeyword, Family, FamilyTask
 import random
 from datetime import datetime
 from game_status import game_in_progress, time_left, GAME_START_TIME, GAME_END_TIME
+from forms import ChangePasswordForm
+from functools import wraps
+from flask import session, redirect, url_for, flash
 
 main = Blueprint('main', __name__)
 
@@ -74,6 +77,28 @@ def count_logged_in_patrols(family):
     ).distinct(Patrol.id).count()
 
 
+from functools import wraps
+from flask import session, redirect, url_for, flash
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'patrol_id' not in session:
+            flash('Musisz być zalogowany, aby uzyskać dostęp do tej strony.', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@main.route('/logout')
+def logout():
+    session.pop('patrol_id', None)
+    session.pop('family_won', None)
+    session.pop('first_time_winner', None)
+    flash('Zostałeś wylogowany.', 'info')
+    return redirect(url_for('main.index'))
+
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = LoginForm()
@@ -83,32 +108,25 @@ def index():
             return redirect(url_for('main.status'))
 
         patrol_id = form.patrol_id.data
-        # Pobierz numer końcowy z patrol_id
         patrol_number = patrol_id[-1]
         patrol_name = patrol_id[:-1]
-        
-        # Sprawdź, czy numer końcowy jest w mapowaniu
-        if patrol_number in password_map:
-            expected_password = password_map[patrol_number]
-            patrol = Patrol.query.filter_by(name=patrol_id).first()
 
-            if patrol and form.password.data.lower() == expected_password:
-                # Zapisz identyfikator patrolu w sesji
-                session['patrol_id'] = patrol.id
-                
-                family = Family.query.get_or_404(patrol.family_id)
-                # Sprawdź czy punkt za pierwsze logowanie został już przyznany
-                
-                first_login_keyword = f'{form.password.data.lower()}'
+        # Pobierz patrol
+        patrol = Patrol.query.filter_by(name=patrol_id).first()
+        if patrol and form.password.data == patrol.password:
+            session['patrol_id'] = patrol.id
+            family = Family.query.get_or_404(patrol.family_id)
+
+            # Sprawdź, czy logowanie jest pierwszym logowaniem z domyślnym hasłem
+            if form.password.data == password_map[patrol_number]:
+                first_login_keyword = f'{password_map[patrol_number]}'
                 if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
-
                     new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
                     db.session.add(new_used_keyword)
 
                     if not game_in_progress() and datetime.now() > GAME_END_TIME:
                         flash('Gra już dawno się skończyła. Nie dostaniesz punktu za pierwsze logowanie.', 'warning')
                     else:
-                        # Przypisz losową współrzędną magazynu rodzinie przy pierwszym logowaniu
                         assigned_magazine = assign_random_magazine(family)
                         if assigned_magazine:
                             flash(f'Punkt za pierwsze logowanie! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
@@ -116,16 +134,15 @@ def index():
                     db.session.commit()
                 else:
                     flash('Zalogowano ponownie.', 'info')
-                db.session.commit()
-                return redirect(url_for('main.task', patrol_id=patrol.id))
-            else:
-                flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
+            
+            return redirect(url_for('main.task', patrol_id=patrol.id))
         else:
             flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
     return render_template('index.html', form=form)
 
 
 @main.route('/task/<int:patrol_id>', methods=['GET', 'POST'])
+@login_required
 def task(patrol_id):
     if not game_in_progress() and datetime.now() < GAME_START_TIME:
         flash('Gra jeszcze się nie rozpoczęła.', 'danger')
@@ -150,6 +167,22 @@ def task(patrol_id):
     game_not_started = datetime.now() < GAME_START_TIME
     game_ended = datetime.now() > GAME_END_TIME
 
+    # Sprawdź, czy rodzina odkryła wszystkie magazyny
+    if family.discovered_magazines >= 27:
+        family.end_time = datetime.now()
+        db.session.commit()
+        session['family_won'] = True
+        if not session.get('first_time_winner'):
+            session['first_time_winner'] = True
+            return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
+
+        flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
+
+    if patrol.password in password_map.values():
+        patrol_first_login = True
+    else:
+        patrol_first_login = False
+
     form = TaskForm()
     if form.validate_on_submit():
         if game_ended:
@@ -164,7 +197,7 @@ def task(patrol_id):
                 db.session.commit()
                 return redirect(url_for('main.task', patrol_id=patrol.id))
 
-            else: 
+            else:
                 keyword = form.keyword.data.strip().lower()  # Usuń białe znaki i zmień na małe litery
                 
                 # Sprawdź, czy hasło zostało już użyte przez ten patrol
@@ -186,12 +219,6 @@ def task(patrol_id):
                         
                         db.session.commit()
 
-                        # Sprawdź, czy rodzina odkryła wszystkie magazyny
-                        if family.discovered_magazines >= 27:
-                            family.end_time = datetime.now()
-                            db.session.commit()
-                            flash('Rodzina odkryła wszystkie magazyny! Wygraliście grę!', 'success')
-                            return redirect(url_for('main.winner'))  # Przekierowanie na stronę wygranej
                     else:
                         if family.discovered_magazines < 27:
                             if patrol.time_penalty < 25:
@@ -203,17 +230,19 @@ def task(patrol_id):
                         else:
                             flash('Rodzina odkryła wszystkie magazyny, gra zakończona.', 'info')
             
-    return render_template('task.html', form=form, patrol=patrol, family=family, game_not_started=game_not_started, game_ended=game_ended)
+    return render_template('task.html', form=form, patrol=patrol, family=family, game_not_started=game_not_started, game_ended=game_ended, patrol_first_login=patrol_first_login)
 
 
 @main.route('/winner')
 def winner():
-    # Pobierz identyfikator patrolu z sesji
     if 'patrol_id' in session:
         patrol = Patrol.query.get(session['patrol_id'])
         family = Family.query.get(patrol.family_id)
 
-        # Sprawdź, czy rodzina odkryła wszystkie magazyny
+        if family.discovered_magazines is None:
+            family.discovered_magazines = 0
+            db.session.commit()
+
         if family.discovered_magazines >= 27:
             return render_template('winner.html', patrol=patrol, family=family)
         else:
@@ -225,6 +254,7 @@ def winner():
 
 
 @main.route('/ranking')
+@login_required
 def ranking():
     # Pobierz ID patrolu z sesji
     patrol_id = session.get('patrol_id')
@@ -271,3 +301,20 @@ def status():
                            game_start_time=GAME_START_TIME, 
                            game_end_time=GAME_END_TIME,
                            game_ended=game_ended)
+
+
+@main.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        patrol_id = session.get('patrol_id')
+        if patrol_id:
+            patrol = Patrol.query.get(patrol_id)
+            if patrol:
+                patrol.password = form.new_password.data
+                db.session.commit()
+                flash('Hasło zostało zmienione.', 'success')
+                return redirect(url_for('main.task', patrol_id=patrol.id))
+        flash('Nie udało się zmienić hasła.', 'danger')
+    return render_template('change_password.html', form=form)

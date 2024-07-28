@@ -15,17 +15,31 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.index') }}">Logowanie</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.task', patrol_id=session.get('patrol_id', 1)) }}">Zadania</a>
-                </li>
+                {% if session.get('patrol_id') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.task', patrol_id=session.get('patrol_id', 1)) }}">Zadania</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.ranking') }}">Ranking</a>
+                    </li>
+                    {% if session.get('family_won') %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.winner') }}">Wygrana</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.change_password') }}">Zmień hasło</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.logout') }}">Wyloguj się</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Logowanie</a>
+                    </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.status') }}">Status</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.ranking') }}">Ranking</a>
                 </li>
             </ul>
         </div>

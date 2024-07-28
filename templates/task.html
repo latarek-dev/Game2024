@@ -43,6 +43,12 @@
 <div class="container">
     <h1 class="text-center">Zadanie dla patrolu {{ patrol.name }}</h1>
 
+    {% if patrol_first_login %}
+    <div class="alert alert-danger">
+        Zalecamy zmianę domyślnego hasła! <a href="{{ url_for('main.change_password') }}" class="alert-link">Zmień hasło</a>
+    </div>
+    {% endif %}
+
     <!-- Wyświetlanie wiadomości flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

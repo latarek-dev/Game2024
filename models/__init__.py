@@ -9,6 +9,7 @@ class Patrol(db.Model):
     name = db.Column(db.String(50), nullable=False)
     family_id = db.Column(db.Integer, db.ForeignKey('family.id'), nullable=False)
     time_penalty = db.Column(db.Integer, default=0)
+    password = db.Column(db.String(128), nullable=False, default='default_password')  # Dodajemy domyślne hasło
     used_keywords = db.relationship('UsedKeyword', backref='patrol', lazy=True)
 
 class Family(db.Model):

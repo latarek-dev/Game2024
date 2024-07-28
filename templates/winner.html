@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gratulacje!</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container text-center mt-5">
-        <h1 class="display-4 text-success">Gratulacje!</h1>
-        <p class="h4">Rodzina {{ family.name }} odkryła wszystkie magazyny!</p>
-        <p class="h5">Wasze odkryte magazyny: {{ family.discovered_magazines }}</p>
-        <a href="{{ url_for('main.ranking') }}" class="btn btn-primary mt-3">Powrót do rankingu!</a>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Gratulacje!{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4 text-success">Gratulacje!</h1>
+    <p class="h4">Rodzina {{ family.name }} odkryła wszystkie magazyny!</p>
+    <p class="h5">Wasze odkryte magazyny: {{ family.discovered_magazines }}</p>
+    <a href="{{ url_for('main.ranking') }}" class="btn btn-primary mt-3">Powrót do rankingu!</a>
+</div>
+{% endblock %}
