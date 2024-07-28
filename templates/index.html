@@ -2,6 +2,21 @@
 
 {% block title %}Logowanie{% endblock %}
 
+{% block head %}
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        
+        .img-fluid {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <h1 class="text-center">Logowanie do gry</h1>
@@ -27,5 +42,11 @@
             {{ form.submit(class="btn btn-primary btn-block") }}
         </div>
     </form>
+
+    <!-- Dodanie obrazka Warszawy poniżej formularza logowania -->
+    <br>
+    <div class="mt-4 text-center">
+        <img src="{{ url_for('static', filename='images/warszawa.jpg') }}" class="img-fluid" alt="Warszawa">
+    </div>
 </div>
 {% endblock %}
