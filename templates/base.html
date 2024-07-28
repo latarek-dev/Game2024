@@ -36,7 +36,7 @@
                         </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link btn btn-danger text-white" href="{{ url_for('main.change_password') }}">Zmień hasło</a>
+                        <a class="nav-link {% if patrol_first_login %}btn btn-danger text-white{% else %} btn btn-outline-secondary text-dark {% endif %}" href="{{ url_for('main.change_password') }}">Zmień hasło</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link btn btn-outline-secondary text-dark" href="{{ url_for('main.logout') }}">Wyloguj się</a>

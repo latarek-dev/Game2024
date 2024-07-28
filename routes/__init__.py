@@ -91,6 +91,7 @@ def login_required(f):
 
 
 @main.route('/logout')
+@login_required
 def logout():
     session.pop('patrol_id', None)
     session.pop('family_won', None)
@@ -111,33 +112,33 @@ def index():
         patrol_number = patrol_id[-1]
         patrol_name = patrol_id[:-1]
 
-        # Pobierz patrol
         patrol = Patrol.query.filter_by(name=patrol_id).first()
-        if patrol and form.password.data == patrol.password:
-            session['patrol_id'] = patrol.id
-            family = Family.query.get_or_404(patrol.family_id)
-
-            # Sprawdź, czy logowanie jest pierwszym logowaniem z domyślnym hasłem
-            if form.password.data == password_map[patrol_number]:
-                first_login_keyword = f'{password_map[patrol_number]}'
-                if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
-                    new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
-                    db.session.add(new_used_keyword)
-
-                    if not game_in_progress() and datetime.now() > GAME_END_TIME:
-                        flash('Gra już dawno się skończyła. Nie dostaniesz punktu za pierwsze logowanie.', 'warning')
-                    else:
-                        assigned_magazine = assign_random_magazine(family)
-                        if assigned_magazine:
-                            flash(f'Punkt za pierwsze logowanie! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
-
-                    db.session.commit()
-                else:
-                    flash('Zalogowano ponownie.', 'info')
+        if patrol:
+            entered_password = form.password.data
+            default_password = password_map.get(patrol_number, "").lower()
             
-            return redirect(url_for('main.task', patrol_id=patrol.id))
-        else:
-            flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
+            if patrol.password == entered_password or patrol.password.lower() == default_password:
+                session['patrol_id'] = patrol.id
+                family = Family.query.get_or_404(patrol.family_id)
+
+                if entered_password.lower() == default_password:
+                    first_login_keyword = default_password
+                    if not UsedKeyword.query.filter_by(patrol_id=patrol.id, keyword=first_login_keyword).first():
+                        new_used_keyword = UsedKeyword(keyword=first_login_keyword, patrol_id=patrol.id)
+                        db.session.add(new_used_keyword)
+
+                        if not game_in_progress() and datetime.now() > GAME_END_TIME:
+                            flash('Gra już dawno się skończyła. Nie dostaniesz punktu za pierwsze logowanie.', 'warning')
+                        else:
+                            assigned_magazine = assign_random_magazine(family)
+                            if assigned_magazine:
+                                flash(f'Punkt za pierwsze logowanie! Odkryto magazyn na współrzędnych: {assigned_magazine}', 'success')
+
+                        db.session.commit()
+                    else:
+                        flash('Zalogowano ponownie.', 'info')
+                return redirect(url_for('main.task', patrol_id=patrol.id))
+        flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
     return render_template('index.html', form=form)
 
 
@@ -190,7 +191,6 @@ def task(patrol_id):
         else:
             # Sprawdź maksymalną liczbę możliwych do odkrycia magazynów
             count_logged = count_logged_in_patrols(family)
-            print(count_logged)
             max_discoverable_magazines = 27 - (5 - count_logged)
             if family.discovered_magazines >= max_discoverable_magazines and count_logged != 5:
                 flash('Nie możesz zdobyć więcej punktów, ponieważ nie wszystkie patrole się zalogowały na punkcie startowym.', 'warning')
@@ -234,6 +234,7 @@ def task(patrol_id):
 
 
 @main.route('/winner')
+@login_required
 def winner():
     if 'patrol_id' in session:
         patrol = Patrol.query.get(session['patrol_id'])
