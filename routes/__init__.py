@@ -244,7 +244,12 @@ def winner():
             db.session.commit()
 
         if family.discovered_magazines >= 27:
-            return render_template('winner.html', patrol=patrol, family=family)
+            time_left = GAME_END_TIME - datetime.now()
+            if time_left.total_seconds() > 15 * 60:
+                meeting_place = family.meeting_place
+            else:
+                meeting_place = "Brak miejsca spotkania"
+            return render_template('winner.html', patrol=patrol, family=family, meeting_place=meeting_place)
         else:
             flash('Nie masz uprawnień do tej strony.', 'danger')
             return redirect(url_for('main.index'))

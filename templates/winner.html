@@ -7,6 +7,10 @@
     <h1 class="display-4 text-success">Gratulacje!</h1>
     <p class="h4">Rodzina {{ family.name }} odkryła wszystkie magazyny!</p>
     <p class="h5">Wasze odkryte magazyny: {{ family.discovered_magazines }}</p>
+    <br>
+    {% if meeting_place != "Brak miejsca spotkania" %}
+    <p class="h5">Miejsce spotkania: {{ meeting_place }}</p>
+    {% endif %}
     <a href="{{ url_for('main.ranking') }}" class="btn btn-primary mt-3">Powrót do rankingu!</a>
 </div>
 {% endblock %}

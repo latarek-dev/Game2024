@@ -34,4 +34,4 @@ if __name__ == '__main__':
     # Upewnij się, że scheduler zakończy działanie po zamknięciu aplikacji
     atexit.register(lambda: scheduler.shutdown())
 
-    app.run()
+    app.run(debug=True)
