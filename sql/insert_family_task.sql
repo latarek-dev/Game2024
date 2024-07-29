@@ -578,4 +578,14 @@ INSERT INTO Family_Task (id, keyword, family_id) VALUES
 (577, 'żabnica', 58),
 (578, 'prudential', 58),
 (579, 'władca', 58),
-(580, 'żeniszek', 58);
+(580, 'żeniszek', 58),
+(581, 'rejewski', 59),
+(582, 'turnia', 59),
+(583, 'tygrys', 59),
+(584, 'żaba', 59),
+(585, 'czosnek', 59),
+(586, 'erupcja', 59),
+(587, 'żabnica', 59),
+(588, 'prudential', 59),
+(589, 'władca', 59),
+(590, 'żeleźniak', 59);

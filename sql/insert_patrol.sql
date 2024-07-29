@@ -288,4 +288,9 @@ INSERT INTO Patrol (id, name, family_id, time_penalty, password) VALUES
 (287, 'żeniszek2', 58, 0, 'zawiercie'),
 (288, 'żeniszek3', 58, 0, 'bydgoszcz'),
 (289, 'żeniszek4', 58, 0, 'konin'),
-(290, 'żeniszek5', 58, 0, 'zielonka');
+(290, 'żeniszek5', 58, 0, 'zielonka'),
+(291, 'żeleźniak1', 59, 0, 'zabrze'),
+(292, 'żeleźniak2', 59, 0, 'zawiercie'),
+(293, 'żeleźniak3', 59, 0, 'bydgoszcz'),
+(294, 'żeleźniak4', 59, 0, 'konin'),
+(295, 'żeleźniak5', 59, 0, 'zielonka');

@@ -56,4 +56,5 @@ INSERT INTO Family (id, name, magazine_list, route, meeting_place) VALUES
 (55, 'głóg', 'a', 'b', 'Światłotrysk (Łacha Potocka)'),
 (56, 'gryka', 'b', 'b', 'Ślizg (Bulwar Zbigniewa Religi)'),
 (57, 'żurawka', 'c', 'a', 'Fort Legionów (przed budynkiem)- ul. Zakroczymska 12'),
-(58, 'żeniszek', 'd', 'a', 'Tablica pamiątkowa - Płyta desantu na przyczółku żoliborskim (niedaleko Liceum Muzycznego na ul. Krasińskiego)');
+(58, 'żeniszek', 'd', 'a', 'Tablica pamiątkowa - Płyta desantu na przyczółku żoliborskim (niedaleko Liceum Muzycznego na ul. Krasińskiego)'),
+(59, 'żeleźniak', 'a', 'a', 'Park Fosa i Stoki Cytadeli w Warszawie (przy stawie)');
