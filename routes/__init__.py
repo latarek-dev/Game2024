@@ -117,7 +117,7 @@ def index():
             entered_password = form.password.data
             default_password = password_map.get(patrol_number, "").lower()
             
-            if patrol.password == entered_password or patrol.password.lower() == default_password:
+            if patrol.password == entered_password or (entered_password.lower() == default_password and patrol.password.lower() == default_password):
                 session['patrol_id'] = patrol.id
                 family = Family.query.get_or_404(patrol.family_id)
 
@@ -138,7 +138,10 @@ def index():
                     else:
                         flash('Zalogowano ponownie.', 'info')
                 return redirect(url_for('main.task', patrol_id=patrol.id))
-        flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
+            else:
+                flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
+        else:
+            flash('Niepoprawna nazwa patrolu lub hasło', 'danger')
     return render_template('index.html', form=form)
 
 
