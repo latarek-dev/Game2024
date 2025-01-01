@@ -172,7 +172,7 @@ def task(patrol_id):
     game_ended = datetime.now() > GAME_END_TIME
 
     # Sprawdź, czy rodzina odkryła wszystkie magazyny
-    if family.discovered_magazines >= 27:
+    if family.discovered_magazines >= 27 and family.end_time is None:
         family.end_time = datetime.now()
         db.session.commit()
         session['family_won'] = True
